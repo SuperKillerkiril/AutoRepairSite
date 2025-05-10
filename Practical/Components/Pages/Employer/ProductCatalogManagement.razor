@@ -1,0 +1,64 @@
+@page "/ProductCatalogManagement"
+@using Model
+@using Practical.DataBase
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@inject ModelContext ef
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<div class="background-N2">
+        <div class="catalog-filter">
+            <button>Все товары</button>
+            <button>Цена</button>
+            <button>Склад</button>
+            <button>Поставщик</button>
+            <div class="catalog-search">
+                <input type="text"@bind="search"/><button @onclick="ReSearch"><img src="Icon/search.svg"/></button>
+            </div>
+        </div>
+    @foreach (var product in _products)
+    {
+        <div class="product-container">
+            <img src="@product.Image"/>
+            <div class="product-description">
+                <div class="product-description-header">
+                    <h1>@product.ProductName</h1><h4>Sale price: @product.SalePrice$</h4>
+                </div>
+                <h2>@product.Id</h2>
+                <h4>@product.ProductDescription</h4>
+                <button class="product-description-button" @onclick="() => ShowDetail(product.Id)"><img src="Icon/info.svg"/>Больше информации</button>
+            </div>
+        </div>
+    }
+</div>
+
+
+
+@code {
+    /*- Добавление, редактирование и удаление автозапчастей
+    - Категоризация и поиск товаров по различным параметрам*/
+    private List<Product> _products = new List<Product>();
+    private short search;
+    
+    
+    protected override void OnInitialized()
+    {
+        LoadProduct();
+    }
+    
+    private void LoadProduct()
+    { _products = ef.Products.ToList(); }
+
+    private void ShowDetail(int productId)
+    {
+        NavigationManager.NavigateTo($"/ProductDemo/{productId}");
+    }
+
+    private void ReSearch()
+    {
+        LoadProduct();
+        search = Convert.ToInt16(search);
+        _products = _products.Where(p => p.Id == search).ToList();
+        StateHasChanged();
+    }
+}

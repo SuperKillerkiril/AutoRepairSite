@@ -1,0 +1,183 @@
+@page "/ProductDemo/{id:int}"
+@using Model
+@using Practical.DataBase
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@inject ModelContext ef
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@if (message != null)
+{
+    <div class="error-message">
+        @message
+    </div>
+    Timer();
+}
+
+<div class="background-N1">
+    <div class="product-demo-header">
+        <img src="@_product.Image"/>
+        <div class="product-demo-header-name">
+            <div class="display-flex-N1">
+                <h1>Name: @_product.ProductName</h1>
+                <button @onclick="RedactName"><img src="Icon/pencil.svg"/>ред.</button>
+            </div>
+            <div class="display-flex-N1"><h3>id: @_product.Id</h3><button @onclick="RemoveProduct"><img src="Icon/trashBin.svg"/>удалить</button></div>
+            <div class="display-flex-N1"><h3>Part: @_product.PartNumber</h3></div>
+        </div>
+    </div>
+    
+    <div class="product-demo-middle">
+        <div class="product-demo-middle-stock">
+            <h3>Склад:<button @onclick="RedactStock"><img src="Icon/pencil.svg"/>ред.</button></h3>
+            <h5>Прямо сейчас на складе: </h5>
+            <h5>@_product.QuantityInStock</h5>
+            <h5>Минимальное количество: </h5>
+            <h5>@_product.MinimumStockLevel</h5>
+        </div>
+        <div class="product-demo-middle-stock">
+            <h3>Цена:<button @onclick="RedactPrice"><img src="Icon/pencil.svg"/>ред.</button></h3>
+            <h5>Закупка: </h5>
+            <h5>@_product.PurchasePrice</h5>
+            <h5>Продажа: </h5>
+            <h5>@_product.SalePrice</h5>
+        </div>
+        <div class="product-demo-middle-suppler">
+            <h3>Поставщик @_supplier.Name <button @onclick="RedactSupplier"><img src="Icon/pencil.svg"/>изм.</button></h3>
+            <h5>ID: @_product.SupplierId</h5>
+            <h5>Адрес: @_supplier.Address</h5>
+            <h5>Номер: @_supplier.ContactNumber</h5>
+            <h5>Email: @_supplier.Email</h5>
+        </div>
+        <div class="product-demo-middle-description">
+            <h3>Описание: <button @onclick="RedactDescription"><img src="Icon/pencil.svg"/>Редактировать</button></h3>
+            <h5>@_product.ProductDescription</h5>
+        </div>
+        <div class="product-demo-middle-statistic">
+            <h3>Статистика по продукту <button><img src="Icon/refresh-ccw.svg"/>обновить</button></h3>
+        </div>
+    </div>
+</div>
+@if (IsOpenRedactName)
+{
+    <div class="redact-menu">
+        <h5>Имя продукта <button @onclick="RedactName">X</button></h5>
+        <input type="text" @bind="_product.ProductName"/>
+        <h5>Артикль (номер модели)</h5>
+        <input type="text" @bind="_product.PartNumber"/>
+        <button @onclick="SaveNewChanges">Сохранить изменения</button>
+    </div>
+}
+@if (IsOpenRedactStock)
+{
+    <div class="redact-menu">
+        <h5>Количество на складе<button @onclick="RedactStock">X</button></h5>
+        <input type="text" @bind="_product.QuantityInStock"/>
+        <h5>Минимальное количество</h5>
+        <input type="text" @bind="_product.MinimumStockLevel"/>
+        <button @onclick="SaveNewChanges">Сохранить изменения</button>
+    </div>
+}
+@if (IsOpenRedactPrise)
+{
+    <div class="redact-menu">
+        <h5>Цена продажи<button @onclick="RedactPrice">X</button></h5>
+        <input type="text" @bind="_product.SalePrice"/>
+        <h5>Цена закупки</h5>
+        <input type="text" @bind="_product.PurchasePrice"/>
+        <button @onclick="SaveNewChanges">Сохранить изменения</button>
+    </div>
+}
+@if (IsOpenRedactDescription)
+{
+<div class="redact-menu">
+    <h5>Описание:<button @onclick="RedactDescription">X</button></h5>
+    <textarea @bind="_product.ProductDescription"></textarea>
+    <button @onclick="SaveNewChanges">Сохранить изменения</button>
+</div>
+}
+@if (IsOpenRedactSupplier)
+{
+    <div class="redact-menu">
+        <select class="redact-menu-select" @bind="SupplierId">
+            @foreach (var _supp in _suppliers)
+            {
+                <option value="@_supp.Id">@_supp.Name</option>
+            }
+        </select>
+        <button @onclick="SaveNewChanges">Сохранить изменения</button>
+    </div>
+}
+
+
+
+
+@code {
+    /*- Добавление, редактирование и удаление автозапчастей
+    - Категоризация и поиск товаров по различным параметрам*/
+    [Parameter] public int id { get; set; }
+    private Product _product = new Product();
+    private Supplier _supplier = new Supplier();
+    private List<Supplier> _suppliers = new List<Supplier>();
+    private string? message = null;
+    private bool IsOpenRedactName;
+    private bool IsOpenRedactStock;
+    private bool IsOpenRedactPrise;
+    private bool IsOpenRedactSupplier;
+    private int SupplierId;
+    private bool IsOpenRedactDescription;
+
+    protected override void OnInitialized()
+    {
+        LoadProduct();
+    }
+    private async void Timer()
+    { await Task.Delay(10000); message = null; StateHasChanged(); }
+
+    private void LoadProduct()
+    {
+        try
+        { 
+            _product = ef.Products.FirstOrDefault(p => p.Id == id)!;
+           /* _supplier = ef.Suppliers.FirstOrDefault(s => s.Id == _product.SupplierId);*/ 
+        }
+        catch (Exception e)
+        { message = e.Message; }   
+    }
+
+    private void RemoveProduct()
+    { 
+        ef.Remove(_product);
+        ef.SaveChanges(); 
+    }
+
+    private void RedactName()
+    { IsOpenRedactName = !IsOpenRedactName; }
+    private void RedactStock()
+    { IsOpenRedactStock = !IsOpenRedactStock; }
+    private void RedactPrice()
+    { IsOpenRedactPrise = !IsOpenRedactPrise; }
+    private void RedactDescription()
+    { IsOpenRedactDescription = !IsOpenRedactDescription; }
+
+    private void RedactSupplier()
+    {
+        IsOpenRedactSupplier = !IsOpenRedactSupplier;
+        _suppliers = ef.Suppliers.ToList();
+    }
+
+    private void SaveNewChanges()
+    {
+        try
+        {
+            _supplier = ef.Suppliers.FirstOrDefault(s => s.Id == SupplierId);
+            _product.SupplierId = _supplier.Id;
+            ef.Update(_product);
+            ef.SaveChanges();
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            message = e.Message;
+        }
+    }
+}

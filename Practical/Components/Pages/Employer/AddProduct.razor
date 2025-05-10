@@ -1,0 +1,60 @@
+@page "/AddProduct"
+@using Model
+@using Practical.DataBase
+@rendermode InteractiveServer
+@inject ModelContext ef
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+
+<div class="background-N1">
+    <div class="add-product-container">
+        <div class="add-product">
+            <h5>Имя продукта</h5>
+            <input type="text" @bind="_product.ProductName"/>
+            <h5>Артикль (номер модели)</h5>
+            <input type="text" @bind="_product.PartNumber"/>
+        </div>
+        <div class="add-product">
+            <h5>Количество на складе</h5>
+            <input type="text" @bind="_product.QuantityInStock"/>
+            <h5>Минимальное количество</h5>
+            <input type="text" @bind="_product.MinimumStockLevel"/>
+        </div>
+        <div class="add-product">
+            <h5>Цена продажи</h5>
+            <input type="text" @bind="_product.SalePrice"/>
+            <h5>Цена закупки</h5>
+            <input type="text" @bind="_product.PurchasePrice"/>
+        </div>
+        <div class="add-product">
+            <h5>Описание</h5>
+            <textarea @bind="_product.ProductDescription"></textarea>
+        </div>
+        <div class="add-product">
+            <h5>Поставщик</h5>
+            <select class="add-product-select" @bind="_product.SupplierId">
+                @foreach (var _supp in _suppliers)
+                {
+                    <option value="@_supp.Id">@_supp.Name</option>
+                }
+            </select>
+        </div>
+        <button @onclick="SaveNewChanges">Сохранить изменения</button>
+    </div>
+</div>
+
+@code {
+    private Product _product = new Product();
+    private List<Supplier> _suppliers = new List<Supplier>();
+
+    protected override void OnInitialized()
+    {
+       _suppliers = ef.Suppliers.ToList();
+    }
+
+    protected void SaveNewChanges()
+    {
+        ef.Add(_product);
+        ef.SaveChanges();
+    }
+}
