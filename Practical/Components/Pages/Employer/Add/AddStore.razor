@@ -1,0 +1,47 @@
+@page "/AddStore"
+@using Model
+@using Practical.DataBase
+@rendermode InteractiveServer
+@inject ModelContext ef
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+
+@if (msg != null)
+{
+<div class="error-message">
+    @msg
+</div>
+Timer();
+}
+<div class="background-N1">
+    <div class="add-product-container">
+        <div class="add-product">
+            <h5>Имя магазина</h5>
+            <input type="text" @bind="_store.Name"/>
+            <h5>Расположение</h5>
+            <input type="text" @bind="_store.Location"/>
+        </div>
+        <button @onclick="SaveNewChanges">Добавить магазин</button>
+    </div>
+</div>
+
+@code {
+    private Store _store = new Store();
+    private string msg;
+    private int _storeId;
+
+    private void SaveNewChanges()
+    {
+        ef.Add(_store);
+        ef.SaveChanges();
+        msg = "Магазин добавлен";
+        Timer();
+        _storeId = _store.Id;
+        NavigationManager.NavigateTo($"/StoreDemo/{_storeId}");//добавить страницу
+    }
+    
+    private async void Timer()
+    { await Task.Delay(10000); msg = null; StateHasChanged(); }
+
+}

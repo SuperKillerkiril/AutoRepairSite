@@ -22,7 +22,7 @@
                 <button @onclick="RedactName"><img src="Icon/pencil.svg"/>ред.</button>
             </div>
             <div class="display-flex-N1"><h3>id: @_product.Id</h3><button @onclick="RemoveProduct"><img src="Icon/trashBin.svg"/>удалить</button></div>
-            <div class="display-flex-N1"><h3>Part: @_product.PartNumber</h3></div>
+            <div class="display-flex-N1"><h3>Part: @_product.PartNumber</h3><button><img src="Icon/trashBin.svg"/>заказать</button></div><!--добавить метод-->
         </div>
     </div>
     
@@ -98,6 +98,7 @@
 @if (IsOpenRedactSupplier)
 {
     <div class="redact-menu">
+        <button @onclick="RedactSupplier">X</button>
         <select class="redact-menu-select" @bind="SupplierId">
             @foreach (var _supp in _suppliers)
             {
@@ -169,11 +170,12 @@
     {
         try
         {
-            _supplier = ef.Suppliers.FirstOrDefault(s => s.Id == SupplierId);
+            //_supplier = ef.Suppliers.FirstOrDefault(s => s.Id == SupplierId);
             _product.SupplierId = _supplier.Id;
             ef.Update(_product);
             ef.SaveChanges();
             StateHasChanged();
+            message = "Изменения сохраненны";
         }
         catch (Exception e)
         {

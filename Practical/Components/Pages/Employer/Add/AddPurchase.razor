@@ -1,0 +1,83 @@
+@page "/AddPurchase"
+@using Model
+@using Practical.DataBase
+@rendermode InteractiveServer
+@inject ModelContext ef
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+@if (msg != null)
+{
+    <div class="error-message">
+        @msg
+    </div>
+    Timer();
+}
+<div class="background-N1">
+    <div class="add-product-container">
+        <div class="add-product">
+            <div class="add-product">
+                <h5>Товар:</h5>
+                <select class="add-product-select" @bind="_product.Id">
+                    @foreach (var prodd in _products)
+                    {   
+                        <option  value="@prodd.Id">@prodd.ProductName</option>
+                    }
+                </select>
+                <button @onclick="ChangeProduct">Принять</button>
+                <h5>Магазин:</h5>
+                <select class="add-product-select"  @bind="_purchase.StoreId">
+                    @foreach (var stor in _stores)
+                    {
+                        <option  value="@stor.Id">@stor.Name</option>
+                    }
+                </select>
+                <label>Количество: @_purchase.Quantity</label>
+                <input type="number" min="1" max="@_product.QuantityInStock" @bind="_purchase.Quantity"/>
+            </div>
+        </div>
+        <button @onclick="SaveNewChanges">Создать заказ</button>
+    </div>
+</div>
+
+
+@code {
+    private Purchase _purchase = new Purchase();
+    private Product _product = new Product();
+    private List<Product> _products = new List<Product>();
+    private List<Store> _stores = new List<Store>();
+    private string? msg;
+    private int _purchaseId;
+
+    protected override void OnInitialized()
+    {
+        LoadModel();
+    }
+
+    private void LoadModel()
+    {
+        _stores = ef.Stores.ToList();
+        _products = ef.Products.ToList();
+    }
+
+    private void ChangeProduct()
+    {
+        _product = ef.Products.FirstOrDefault(p => p.Id == _product.Id);
+        StateHasChanged();
+    }
+
+    private void SaveNewChanges()
+    {
+        _purchase.TotalPrice = _product.SalePrice + 100; //цена доставки
+        _purchase.ProductId = _product.Id; 
+        _purchase.PurchaseDate = DateTime.Now;
+        ef.Add(_purchase);
+        ef.SaveChanges();
+        msg = "Заказ создан";
+        Timer();
+        _purchaseId = _purchase.Id;
+        NavigationManager.NavigateTo($"/PurchaseDemo/{_purchaseId}");//добавить страницу
+    }
+    private void Timer()
+    {  Task.Delay(10000); msg = null; StateHasChanged(); }
+}

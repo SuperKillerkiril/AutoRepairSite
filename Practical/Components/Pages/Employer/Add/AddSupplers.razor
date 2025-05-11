@@ -1,0 +1,50 @@
+@page "/AddSuppliers"
+@using Model
+@using Practical.DataBase
+@rendermode InteractiveServer
+@inject ModelContext ef
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+
+@if (msg != null)
+{
+    <div class="error-message">
+        @msg
+    </div>
+    Timer();
+}
+<div class="background-N1">
+    <div class="add-product-container">
+        <div class="add-product">
+            <h5>Имя поставщика</h5>
+            <input type="text" @bind="_supplier.Name"/>
+            <h5>Почтовый адрес</h5>
+            <input type="text" @bind="_supplier.Email"/>
+            <h5>Контактный номер</h5>
+            <input type="text" @bind="_supplier.ContactNumber"/>
+            <h5>Адрес</h5>
+            <input type="text" @bind="_supplier.Address"/>
+        </div>
+        <button @onclick="SaveNewChanges">Зарегистрировать нового поставщика</button>
+    </div>
+    </div>
+
+@code {
+    private Supplier _supplier = new Supplier();
+    private string msg;
+    private int _supplierId;
+    
+    private void SaveNewChanges()
+    {
+        ef.Add(_supplier);
+        ef.SaveChanges();
+        msg = "Поставщик добавлен";
+        Timer();
+        _supplierId = _supplier.Id;
+        NavigationManager.NavigateTo($"/SupplierDemo/{_supplierId}");//добавить страницу
+    }
+    private async void Timer()
+    { await Task.Delay(10000); msg = null; StateHasChanged(); }
+
+}

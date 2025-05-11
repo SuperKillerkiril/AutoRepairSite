@@ -7,29 +7,31 @@
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
 <div class="background-N2">
-        <div class="catalog-filter">
-            <button>Все товары</button>
-            <button>Цена</button>
-            <button>Склад</button>
-            <button>Поставщик</button>
-            <div class="catalog-search">
-                <input type="text"@bind="search"/><button @onclick="ReSearch"><img src="Icon/search.svg"/></button>
-            </div>
-        </div>
-    @foreach (var product in _products)
-    {
-        <div class="product-container">
-            <img src="@product.Image"/>
-            <div class="product-description">
-                <div class="product-description-header">
-                    <h1>@product.ProductName</h1><h4>Sale price: @product.SalePrice$</h4>
+    <div class="background-N3">
+        @foreach (var product in _products)
+        {
+            <div class="product-container">
+                <img src="@product.Image"/>
+                <div class="product-description">
+                    <div class="product-description-header">
+                        <h1>@product.ProductName</h1><h4>Sale price: @product.SalePrice$</h4>
+                    </div>
+                    <h2>@product.Id</h2>
+                    <h4>@product.ProductDescription</h4>
+                    <button class="product-description-button" @onclick="() => ShowDetail(product.Id)"><img src="Icon/info.svg"/>Больше информации</button>
                 </div>
-                <h2>@product.Id</h2>
-                <h4>@product.ProductDescription</h4>
-                <button class="product-description-button" @onclick="() => ShowDetail(product.Id)"><img src="Icon/info.svg"/>Больше информации</button>
             </div>
+        }
+    </div>
+    <div class="catalog-filter">
+        <button>Все товары</button>
+        <button>Цена</button>
+        <button>Склад</button>
+        <button>Поставщик</button>
+        <div class="catalog-search">
+            <input type="text"@bind="search"/><button @onclick="ReSearch"><img src="Icon/search.svg"/></button>
         </div>
-    }
+    </div>
 </div>
 
 

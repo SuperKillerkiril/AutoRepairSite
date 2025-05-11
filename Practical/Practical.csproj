@@ -21,10 +21,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Components\Pages\User\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\Practical.DataBase\Practical.DataBase.csproj" />
     </ItemGroup>
 

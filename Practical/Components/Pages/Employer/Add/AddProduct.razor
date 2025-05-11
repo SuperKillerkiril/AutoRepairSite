@@ -4,8 +4,15 @@
 @rendermode InteractiveServer
 @inject ModelContext ef
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
 
-
+@if (msg != null)
+{
+<div class="error-message">
+    @msg
+</div>
+Timer();
+}
 <div class="background-N1">
     <div class="add-product-container">
         <div class="add-product">
@@ -31,6 +38,11 @@
             <textarea @bind="_product.ProductDescription"></textarea>
         </div>
         <div class="add-product">
+            <h5>Путь к изображению</h5>
+            <img src="@_product.Image"/>
+            <input type="text" @bind="_product.Image"/>
+        </div>
+        <div class="add-product">
             <h5>Поставщик</h5>
             <select class="add-product-select" @bind="_product.SupplierId">
                 @foreach (var _supp in _suppliers)
@@ -39,22 +51,32 @@
                 }
             </select>
         </div>
-        <button @onclick="SaveNewChanges">Сохранить изменения</button>
     </div>
+    <button @onclick="SaveNewChanges">Создать продукт</button>
 </div>
 
 @code {
     private Product _product = new Product();
+    private int productId;
     private List<Supplier> _suppliers = new List<Supplier>();
+    private string? msg;
 
     protected override void OnInitialized()
     {
        _suppliers = ef.Suppliers.ToList();
+       _product.SupplierId = 1;
+       _product.Image = "notfound";
     }
-
+    private void Timer()
+    {  Task.Delay(10000); msg = null; StateHasChanged(); }
+    
     protected void SaveNewChanges()
     {
         ef.Add(_product);
         ef.SaveChanges();
+        msg = "Продукт создан";
+        Timer();
+        productId = _product.Id;
+        NavigationManager.NavigateTo($"/ProductDemo/{productId}");
     }
 }
