@@ -130,10 +130,12 @@
 
     public void GetProductBelowMinimum()
     {
+        LoadData(); 
         _productsBelowMinimum = _products.Where(p => p.QuantityInStock < p.MinimumStockLevel).ToList();
     }
     public void GetNewProducts()
     {
+        LoadData();
         _productsNewProducts = _products.Where(p => p.DateAdded >= _sinceDate).ToList();
     }
 
