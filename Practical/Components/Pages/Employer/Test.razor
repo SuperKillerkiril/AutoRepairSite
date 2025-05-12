@@ -1,0 +1,66 @@
+﻿@page "/Test"
+@using Model
+@using Practical.DataBase
+@rendermode InteractiveServer
+@inject ModelContext ef
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+<div class="statistics-product">
+    <h3>Статистика по товарам</h3>
+    <h4>Самые продаваемые товары за Период:</h4>
+    <h5>от: <input type="date" @bind="_timeStart"/></h5>
+    <h5>до: <input type="date" @bind="_timeEnd"/></h5>
+    @foreach (var product in GetTopSellingProduct())
+    {
+    <div class="statistics-stockBM-container">
+        <div class="statistics-stockBM-description">
+            <div class="statistics-stockBM-description-header">
+                <h5>@product.ProductName</h5>
+            </div>
+            <h5>Сколько раз заказали:</h5>
+            <h6>@product.TotalQuantitySold</h6>
+            <h6>ID: @product.ProductId</h6>
+            <button class="product-description-button" @onclick="() => ShowDetail(product.ProductId)"><img src="Icon/info.svg"/>Больше информации</button>
+        </div>
+    </div>
+    }
+</div>
+
+@code {
+    private List<Purchase> _purchases = new List<Purchase>();
+    private List<Product> _products = new List<Product>();
+    
+    private DateTime _timeStart { get; set; }
+    private DateTime _timeEnd { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        _products = ef.Products.ToList();
+        _purchases = ef.Purchases.ToList();
+    }
+    
+    public IEnumerable<Statistics.Statistics.ProductSales> GetTopSellingProduct()
+    {
+        var salesData = _purchases.Where(p => p.PurchaseDate >= _timeStart && p.PurchaseDate <= _timeEnd)
+            .GroupBy(p => p.ProductId)
+            .Select(g => new { ProductId = g.Key, QuantitySold = g.Sum(p => p.Quantity) })
+            .Join(_products, g => g.ProductId, p => p.Id, (g, p) => new Statistics.Statistics.ProductSales
+                {
+                    ProductId = p.Id,
+                    ProductName = p.ProductName,
+                    TotalQuantitySold = g.QuantitySold
+                }
+            );
+        return salesData.OrderByDescending(s => s.TotalQuantitySold).Take(1);
+    }
+    private void ShowDetail(int productId)
+    {
+        NavigationManager.NavigateTo($"/ProductDemo/{productId}");
+    }
+}

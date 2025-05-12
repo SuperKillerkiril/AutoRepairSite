@@ -28,13 +28,13 @@
         </div>
         <button @onclick="SaveNewChanges">Зарегистрировать нового поставщика</button>
     </div>
-    </div>
+</div>
 
 @code {
     private Supplier _supplier = new Supplier();
     private string msg;
     private int _supplierId;
-    
+
     private void SaveNewChanges()
     {
         ef.Add(_supplier);
@@ -42,9 +42,14 @@
         msg = "Поставщик добавлен";
         Timer();
         _supplierId = _supplier.Id;
-        NavigationManager.NavigateTo($"/SupplierDemo/{_supplierId}");//добавить страницу
+        NavigationManager.NavigateTo($"/SupplierDemo/{_supplierId}"); //добавить страницу
     }
+
     private async void Timer()
-    { await Task.Delay(10000); msg = null; StateHasChanged(); }
+    {
+        await Task.Delay(10000);
+        msg = null;
+        StateHasChanged();
+    }
 
 }

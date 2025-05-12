@@ -101,8 +101,8 @@
     private List<SupplierStatistic> _supplierStatistics = new List<SupplierStatistic>();
     private List<Product> _productsNewProducts = new List<Product>();
     private DateTime _sinceDate { get; set; }
-    private DateTime _timeStart { get; set; }
-    private DateTime _timeEnd { get; set; }
+    private DateTime _timeStart { get; set; } = DateTime.Now.AddDays(-14);
+    private DateTime _timeEnd { get; set; } = DateTime.Now; 
     
     
 
