@@ -1,0 +1,59 @@
+@page "/ProductDemoClient/{id:int}"
+@using Model
+@using Practical.DataBase
+@using Practical.Services
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@inject ModelContext ef
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+
+<div class="background-N1">
+    <div class="product-demo-header">
+        <img src="@_product.Image"/>
+        <div class="product-demo-header-name">
+            <div class="display-flex-N1">
+                <h1>Name: @_product.ProductName</h1>
+            </div>
+            <div class="display-flex-N1"><h3>id: @_product.Id</h3></div>
+            <div class="display-flex-N1"><h3>Part: @_product.PartNumber</h3><button><img src="Icon/square-plus.svg"/>заказать</button></div><!--добавить метод-->
+        </div>
+    </div>
+
+<div class="product-demo-middle">
+    <div class="product-demo-middle-stock">
+        <h5>Прямо сейчас на складе: </h5>
+        <h5>@_product.QuantityInStock</h5>
+    </div>
+    <div class="product-demo-middle-stock">
+        <h3>Цена:</h3>
+        <h5>@_product.SalePrice</h5>
+    </div>
+</div>
+</div>
+
+@code {
+    [Parameter] public int id { get; set; }
+    private Product _product = new Product();
+    private string Role;
+    private string message;
+    
+    protected override async void OnInitialized()
+    {
+        LoadProduct();
+        Role = await LocalStorage.GetItemAsync<string>("Role");
+        if (Role != "Client")
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+    private void LoadProduct()
+    {
+        try
+        { 
+            _product = ef.Products.FirstOrDefault(p => p.Id == id)!;
+        }
+        catch (Exception e)
+        { message = e.Message; }   
+    }
+}

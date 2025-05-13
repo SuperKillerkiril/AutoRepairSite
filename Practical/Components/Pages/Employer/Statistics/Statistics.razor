@@ -6,23 +6,26 @@
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
 
+
+<div class="statistics-data-input">
+    <h5>от: <input type="date" @bind="_timeStart"/></h5>
+    <h5>до: <input type="date" @bind="_timeEnd"/></h5>
+</div>
 <div class="background-N4">
     <div class="statistics-product">
         <h3>Статистика по товарам</h3>
+        <h4>Средняя цена закупки: @GetAveragePurchasePrice()</h4>
+        <h4>Средняя цена продажи: @GetAverageSalePrice()</h4>
         <h4>Самые продаваемые товары за Период:</h4>
-        <h5>от: <input type="date" @bind="_timeStart"/></h5>
-        <h5>до: <input type="date" @bind="_timeEnd"/></h5>
         <button @onclick="GetTopSellingProduct">загрузить</button>
         @foreach (var product in _productsTopSelling)
         {
             <div class="statistics-stockBM-container">
                 <div class="statistics-stockBM-description">
                     <div class="statistics-stockBM-description-header">
-                        <h5>@product.ProductName</h5>
+                        <h5>@product.ProductName</h5><h6>ID: @product.ProductId</h6>
                     </div>
-                    <h5>Сколько раз заказали:</h5>
-                    <h6>@product.TotalQuantitySold</h6>
-                    <h6>ID: @product.ProductId</h6>
+                    <h5>Сколько раз заказали:<h6>@product.TotalQuantitySold</h6></h5>
                     <button class="product-description-button" @onclick="() => ShowDetail(product.ProductId)"><img src="Icon/info.svg"/>Больше информации</button>
                 </div>
             </div>
@@ -31,22 +34,19 @@
     <div class="statistics-product">
         <h3>Статистика поставщику</h3>
         <h4>Объем продаж и закупок за Период:</h4>
-        <h5>от: <input type="date" @bind="_timeStart"/></h5>
-        <h5>до: <input type="date" @bind="_timeEnd"/></h5>
         <button @onclick="GetSupplierStatistics">загрузить</button>
         @foreach (var supplier in _supplierStatistics)
         {
             <div class="statistics-stockBM-container">
                 <div class="statistics-stockBM-description">
                     <div class="statistics-stockBM-description-header">
-                        <h5>@supplier.SupplierName</h5>
+                        <h5>Имя: @supplier.SupplierName</h5><h6>ID: @supplier.SupplierId</h6>
                     </div>
                     <h5>Сумма потраченных средств:</h5>
                     <h6>@supplier.TotalSpent</h6>
                     <h5>Количество приобретенных товаров:</h5>
                     <h6>@supplier.TotalQuantityPurchased</h6>
-                    <h6>ID: @supplier.SupplierId</h6>
-                    <button class="product-description-button" @onclick="() => ShowDetail(supplier.SupplierId)"><img src="Icon/info.svg"/>Больше информации</button>
+                    <button class="product-description-button" @onclick="() => ShowDetailSupplier(supplier.SupplierId)"><img src="Icon/info.svg"/>Больше информации</button>
                 </div>
             </div>
         }
@@ -54,7 +54,7 @@
     <div class="statistics-stock">
         <h3>Все товары от:</h3>
         <input type="date" @bind="_sinceDate"/>
-        <h4>Товары требующие пополнения:  <button @onclick="GetNewProducts">загрузить</button></h4>
+        <button @onclick="GetNewProducts">загрузить</button>
         @foreach (var product in _productsNewProducts)
         {
         <div class="statistics-stockBM-container">
@@ -71,44 +71,58 @@
     </div>
     <div class="statistics-stock">
         <h3>Статистика по складам</h3>
-        <h4>Общая сумма остатка товаров на складе:</h4>
-        <h5>@GetTotalInventory() $</h5>
-        <button @onclick="GetProductBelowMinimum">загрузить</button>
+        <h4>Общая сумма товаров на складе: @GetTotalInventory() $</h4>
+        <h4>Общее количество товаров на складе: @GetTotalQuantityInStock()</h4>
+        <h4>Товары требующие пополнения:  <button @onclick="GetProductBelowMinimum">загрузить</button></h4>
         @foreach (var product in _productsBelowMinimum)
         {
-        <div class="statistics-stockBM-container">
-            <img src="@product.Image"/>
-            <div class="statistics-stockBM-description">
-                <div class="statistics-stockBM-description-header">
-                    <h5>@product.ProductName</h5><h6>Sale price: @product.SalePrice$</h6>
+            <div class="statistics-stockBM-container">
+                <img src="@product.Image"/>
+                <div class="statistics-stockBM-description">
+                    <div class="statistics-stockBM-description-header">
+                        <h5>@product.ProductName</h5><h6>Sale price: @product.SalePrice$</h6>
+                    </div>
+                    <h6>ID: @product.Id</h6>
+                    <button class="product-description-button" @onclick="() => ShowDetail(product.Id)"><img src="Icon/info.svg"/>Больше информации</button>
                 </div>
-                <h6>ID: @product.Id</h6>
-                <button class="product-description-button" @onclick="() => ShowDetail(product.Id)"><img src="Icon/info.svg"/>Больше информации</button>
             </div>
-        </div>
         }
+    </div>
+    <div class="statistics-stock">
+        <h3>Статистика по закупкам</h3>
+        <h4>Общая сумма:</h4>
+        <h5>@GetTotalPurchaseAmount()$</h5>
+        <h4>Общий объем закупок:</h4>
+        <h5>@GetTotalQuantityPurchase()</h5>
     </div>
 </div>
 
 @code {
-    /*самые продаваемые товары за период, Общие закупки за период
-     анализ поставщиков,*/
     private List<Purchase> _purchases = new List<Purchase>();
     private List<Product> _products = new List<Product>();
     private List<Supplier> _suppliers = new List<Supplier>();
+    
+    
     private List<Product> _productsBelowMinimum = new List<Product>();
     private List<ProductSales> _productsTopSelling = new List<ProductSales>();
     private List<SupplierStatistic> _supplierStatistics = new List<SupplierStatistic>();
     private List<Product> _productsNewProducts = new List<Product>();
+    
+    
     private DateTime _sinceDate { get; set; }
     private DateTime _timeStart { get; set; } = DateTime.Now.AddDays(-14);
-    private DateTime _timeEnd { get; set; } = DateTime.Now; 
-    
-    
+    private DateTime _timeEnd { get; set; } = DateTime.Now;
 
-    protected override void OnInitialized()
+
+    private string Role;
+    protected override async void OnInitialized()
     {
         LoadData();
+        Role = await LocalStorage.GetItemAsync<string>("Role");
+        if (Role != "Employer")
+        {
+            NavigationManager.NavigateTo("/");
+        }
     }
 
     private void LoadData()
@@ -122,24 +136,53 @@
     {
         NavigationManager.NavigateTo($"/ProductDemo/{productId}");
     }
+    private void ShowDetailSupplier(int suppId)
+    {
+        NavigationManager.NavigateTo($"/SupplierDemo/{suppId}");
+    }
     
-    public decimal GetTotalInventory()
+    
+    public decimal GetTotalInventory()//сумма на складе
     {
         return _products.Sum(p => p.SalePrice * p.QuantityInStock);
     }
 
-    public void GetProductBelowMinimum()
+    public int GetTotalQuantityInStock()//общее кол-во на складе 
+    {
+        return _products.Sum(p => p.QuantityInStock);
+    }
+
+    public decimal GetAveragePurchasePrice()//сред цена закупки товаров
+    {
+        return _products.Average(p => p.PurchasePrice);
+    }
+    
+    public decimal GetAverageSalePrice()//сред цена продажи
+    {
+        return _products.Average(p => p.SalePrice);
+    }
+    
+    public void GetProductBelowMinimum()//на складе меньше нужного
     {
         LoadData(); 
         _productsBelowMinimum = _products.Where(p => p.QuantityInStock < p.MinimumStockLevel).ToList();
     }
-    public void GetNewProducts()
+    public void GetNewProducts() //новые от
     {
         LoadData();
         _productsNewProducts = _products.Where(p => p.DateAdded >= _sinceDate).ToList();
     }
 
-    public void GetTopSellingProduct()
+    public decimal GetTotalPurchaseAmount()//общ сумма закупок
+    {
+        return _purchases.Where(p => p.PurchaseDate >= _timeStart && p.PurchaseDate <= _timeEnd).Sum(p => p.TotalPrice);
+    }
+    public decimal GetTotalQuantityPurchase()//общ объём закупок
+    {
+        return _purchases.Where(p => p.PurchaseDate >= _timeStart && p.PurchaseDate <= _timeEnd).Sum(p => p.Quantity);
+    }
+
+    public void GetTopSellingProduct() //10 самых продаваемых товаров относительно заказов
     {
         var salesData = _purchases.Where(p => p.PurchaseDate >= _timeStart && p.PurchaseDate <= _timeEnd)
             .GroupBy(p => p.ProductId)
@@ -157,11 +200,11 @@
     public class ProductSales
     {
         public int ProductId { get; set; } 
-        public string ProductName { get; set; }
+        public string? ProductName { get; set; }
         public int TotalQuantitySold { get; set; }
     }
 
-    public void GetSupplierStatistics()
+    public void GetSupplierStatistics()//стата по поставщикам тоже в виде отдельного класса, но операторами
     {
         var query = from p in _purchases
             join prod in _products on p.ProductId equals prod.Id
@@ -172,15 +215,15 @@
             {
                 SupplierId = g.Key.Id,
                 SupplierName = g.Key.Name,
-                TotalQuantityPurchased = g.Sum(p=> p.Quantity),
-                TotalSpent = g.Sum(p=> p.TotalPrice)
+                TotalQuantityPurchased = g.Sum(p=> p.Quantity), //общее количество приобретенных товаров
+                TotalSpent = g.Sum(p=> p.TotalPrice) //общее количество потраченных 
             };
-        _supplierStatistics = query.ToList();
+        _supplierStatistics = query.OrderByDescending(s => s.TotalQuantityPurchased).Take(10).ToList();
     }
     public class SupplierStatistic
     {
        public int SupplierId { get; set; } 
-       public string SupplierName { get; set; }
+       public string? SupplierName { get; set; }
        public int TotalQuantityPurchased { get; set; }
        public decimal TotalSpent { get; set; }
     }

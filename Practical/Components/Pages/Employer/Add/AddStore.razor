@@ -30,6 +30,15 @@ Timer();
     private Store _store = new Store();
     private string msg;
     private int _storeId;
+    private string Role;
+    protected override async void OnInitialized()
+    {
+        Role = await LocalStorage.GetItemAsync<string>("Role");
+        if (Role != "Employer")
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
 
     private void SaveNewChanges()
     {

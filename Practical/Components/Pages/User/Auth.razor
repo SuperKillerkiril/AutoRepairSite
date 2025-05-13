@@ -1,0 +1,98 @@
+@page "/Auth"
+@using Model
+@using Practical.DataBase
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@inject ModelContext ef
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+
+<div class="registered-custom-background">
+    <div class="registered-container">
+        <h3 class="registered-text">ВХОД</h3>
+        <div class="registered-form">
+            <input class="registered-form-input" type="text" @bind="_client.Email" placeholder="Email"/>
+            <input class="registered-form-input" type="password" @bind="_client.Password" placeholder="пароль"/>
+            <button class="registered-form-button" @onclick="AuthUser">Принять</button>
+            @if (IsAuth)
+            {
+            <button class="registered-form-button" @onclick="ReAuth">войти в новый аккаунт</button>
+            }
+        </div>
+        @Msg
+    </div>
+</div>
+
+@code {
+    Client _client = new Client();
+    Client? _authClient = null;
+    Employee? _authEmployee = null;
+    private bool IsAuth = false;
+    private string? Role;
+    private string Msg;
+
+    protected override async void OnInitialized()
+    {
+        try
+        {
+            IsAuth = await LocalStorage.GetItemAsync<bool>("IsAuth");
+            if (IsAuth)
+            {
+                Msg = "Вы уже вошли";
+            }
+            StateHasChanged();
+        }
+        catch
+        {
+            IsAuth = false;
+        }
+    }
+
+    private void ReAuth()
+    {
+        LocalStorage.SetItemAsync("IsAuth", false);
+        LocalStorage.SetItemAsync("Role", "null");
+        Msg = "Введите детали";
+        StateHasChanged();
+    }
+    
+    public async Task AuthUser()
+    {
+        _authClient = ef.Clients.FirstOrDefault(c => c.Email == _client.Email);
+        _authEmployee = ef.Employees.FirstOrDefault(c => c.Email == _client.Email);
+        try
+        {
+            if (_authClient != null && _authClient.Password == _client.Password)
+            {
+                Msg = "Вы вошли";
+                LocalStorage.SetItemAsync("Role", "Client");
+                LocalStorage.SetItemAsync("clientId", _client.Id);
+                LocalStorage.SetItemAsync("clientemail", _client.Email);
+                LocalStorage.SetItemAsync("clientpassword", _client.Password);
+                LocalStorage.SetItemAsync("IsAuth", true);
+                await Task.Delay(1000);
+                NavigationManager.NavigateTo("");
+            }
+            if (_authEmployee != null && _authEmployee.Password == _client.Password)
+            {
+                Msg = "Вы вошли как работник";
+                LocalStorage.SetItemAsync("Role", "Employer");
+                LocalStorage.SetItemAsync("clientId", _client.Id);
+                LocalStorage.SetItemAsync("clientemail", _client.Email);
+                LocalStorage.SetItemAsync("clientpassword", _client.Password);
+                LocalStorage.SetItemAsync("IsAuth", true);
+                await Task.Delay(1000);
+                NavigationManager.NavigateTo("");
+            }
+            else
+            {
+                Msg = "неправильные данные";
+            }
+        }
+        catch (Exception e)
+        {
+            Msg = e.ToString();
+        }
+        
+    }
+}

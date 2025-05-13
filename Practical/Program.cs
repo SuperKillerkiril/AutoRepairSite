@@ -1,7 +1,9 @@
 using Blazored.LocalStorage;
 using Microsoft.EntityFrameworkCore;
 using Practical.Components;
+using Practical.Components.Pages.Employer.Statistics;
 using Practical.DataBase;
+using Practical.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddDbContext<ModelContext>();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddSingleton<StatisticsService>();
 
 var app = builder.Build();
 

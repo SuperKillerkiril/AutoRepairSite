@@ -17,14 +17,14 @@
     <div class="add-product-container">
         <div class="add-product">
             <div class="add-product">
-                <h5>Товар:</h5>
+                <h5>Товар для заказа:<button @onclick="ChangeProduct">Применить товар</button></h5>
                 <select class="add-product-select" @bind="_product.Id">
                     @foreach (var prodd in _products)
                     {   
                         <option  value="@prodd.Id">@prodd.ProductName</option>
                     }
                 </select>
-                <button @onclick="ChangeProduct">Принять</button>
+                
                 <h5>Магазин:</h5>
                 <select class="add-product-select"  @bind="_purchase.StoreId">
                     @foreach (var stor in _stores)
@@ -49,11 +49,16 @@
     private string? msg;
     private int _purchaseId;
 
-    protected override void OnInitialized()
+    private string Role;
+    protected override async void OnInitialized()
     {
         LoadModel();
+        Role = await LocalStorage.GetItemAsync<string>("Role");
+        if (Role != "Employer")
+        {
+            NavigationManager.NavigateTo("/");
+        }
     }
-
     private void LoadModel()
     {
         _stores = ef.Stores.ToList();
@@ -68,6 +73,11 @@
 
     private void SaveNewChanges()
     {
+        var clientid = Convert.ToInt16(LocalStorage.GetItemAsync<string>("clientId"));
+        if (clientid != 0)
+        {
+            _purchase.ClientId = clientid;
+        }
         _purchase.TotalPrice = _product.SalePrice + 100; //цена доставки
         _purchase.ProductId = _product.Id; 
         _purchase.PurchaseDate = DateTime.Now;

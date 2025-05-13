@@ -1,1 +1,43 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@if (msg != null)
+{
+    <div class="error-message">
+        @msg
+    </div>
+    Timer();
+}
+
+<div class="background-N1">
+    <div class="home-name">АВТОЗАПЧАСТИ <img src="Icon/cog.svg"></div>
+    <div class="home-middle">
+        <button @onclick="NavigateToAuth">АВТОРИЗАЦИЯ</button>
+        <div class="home-middle-reg" @onclick="NavigateToRegistred"><button>регистрация</button></div>
+    </div>
+    <div class="home-louer">
+        <button @onclick="NavigateToCatalog">Перейти в каталог</button>
+    </div>
+</div>
+
+@code
+{ 
+    private string msg;
+    
+    private async void Timer()
+    { await Task.Delay(10000); msg = null; StateHasChanged(); }
+
+    private void NavigateToCatalog()
+    {
+        NavigationManager.NavigateTo("ProductCatalogManagement");
+    }
+    private void NavigateToAuth()
+    {
+        NavigationManager.NavigateTo("Auth");
+    }
+    private void NavigateToRegistred()
+    {
+        NavigationManager.NavigateTo("Registred");
+    }
+}

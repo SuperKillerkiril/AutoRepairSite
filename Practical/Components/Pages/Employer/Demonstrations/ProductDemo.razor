@@ -1,6 +1,7 @@
 @page "/ProductDemo/{id:int}"
 @using Model
 @using Practical.DataBase
+@using Practical.Services
 @rendermode InteractiveServer
 @inject NavigationManager NavigationManager
 @inject ModelContext ef
@@ -12,7 +13,57 @@
     </div>
     Timer();
 }
-
+@if (IsOpenRedactName)
+{
+<div class="redact-menu">
+    <h5>Имя продукта <button @onclick="RedactName">X</button></h5>
+    <input type="text" @bind="_product.ProductName"/>
+    <h5>Артикль (номер модели)</h5>
+    <input type="text" @bind="_product.PartNumber"/>
+    <button @onclick="SaveNewChanges">Сохранить изменения</button>
+</div>
+}
+@if (IsOpenRedactStock)
+{
+<div class="redact-menu">
+    <h5>Количество на складе<button @onclick="RedactStock">X</button></h5>
+    <input type="text" @bind="_product.QuantityInStock"/>
+    <h5>Минимальное количество</h5>
+    <input type="text" @bind="_product.MinimumStockLevel"/>
+    <button @onclick="SaveNewChanges">Сохранить изменения</button>
+</div>
+}
+@if (IsOpenRedactPrise)
+{
+<div class="redact-menu">
+    <h5>Цена продажи<button @onclick="RedactPrice">X</button></h5>
+    <input type="text" @bind="_product.SalePrice"/>
+    <h5>Цена закупки</h5>
+    <input type="text" @bind="_product.PurchasePrice"/>
+    <button @onclick="SaveNewChanges">Сохранить изменения</button>
+</div>
+}
+@if (IsOpenRedactDescription)
+{
+<div class="redact-menu">
+    <h5>Описание:<button @onclick="RedactDescription">X</button></h5>
+    <textarea @bind="_product.ProductDescription"></textarea>
+    <button @onclick="SaveNewChanges">Сохранить изменения</button>
+</div>
+}
+@if (IsOpenRedactSupplier)
+{
+<div class="redact-menu">
+    <button @onclick="RedactSupplier">X</button>
+    <select class="redact-menu-select" @bind="SupplierId">
+        @foreach (var supp in _suppliers)
+        {
+        <option value="@supp.Id">@supp.Name</option>
+        }
+    </select>
+    <button @onclick="SaveNewChanges">Сохранить изменения</button>
+</div>
+}
 <div class="background-N1">
     <div class="product-demo-header">
         <img src="@_product.Image"/>
@@ -22,7 +73,7 @@
                 <button @onclick="RedactName"><img src="Icon/pencil.svg"/>ред.</button>
             </div>
             <div class="display-flex-N1"><h3>id: @_product.Id</h3><button @onclick="RemoveProduct"><img src="Icon/trashBin.svg"/>удалить</button></div>
-            <div class="display-flex-N1"><h3>Part: @_product.PartNumber</h3><button><img src="Icon/trashBin.svg"/>заказать</button></div><!--добавить метод-->
+            <div class="display-flex-N1"><h3>Part: @_product.PartNumber</h3><button><img src="Icon/square-plus.svg"/>заказать</button></div><!--добавить метод-->
         </div>
     </div>
     
@@ -53,61 +104,27 @@
             <h5>@_product.ProductDescription</h5>
         </div>
         <div class="product-demo-middle-statistic">
-            <h3>Статистика по продукту <button><img src="Icon/refresh-ccw.svg"/>обновить</button></h3>
+            <h3>Статистика по продукту <button @onclick="GetProductStatistics"><img src="Icon/refresh-ccw.svg"/>обновить</button></h3>
+            <div class="product-demo-middle-statistic-container">
+                <h4>Сколько раз заказали:</h4>
+                <h5>@_numberProductOrders</h5>
+            </div>
+            <div class="product-demo-middle-statistic-container">
+                <h4>самая большая статистика по времени:</h4>
+                <h5>В час: @_purchasesByHourCount</h5>
+                <h5>В день: @_purchasesByDay</h5>
+                <h5>В месяц: @_purchasesByMonth</h5>
+                <h5>Дневная трата: @averageDailyConsumption</h5>
+                @foreach (var history in _purchaseHistory)
+                {
+                    <h5>Дата: @history.Date</h5>
+                    <h5>Всего приобретено: @history.TotalPurchased</h5>
+                }
+            </div>
         </div>
     </div>
 </div>
-@if (IsOpenRedactName)
-{
-    <div class="redact-menu">
-        <h5>Имя продукта <button @onclick="RedactName">X</button></h5>
-        <input type="text" @bind="_product.ProductName"/>
-        <h5>Артикль (номер модели)</h5>
-        <input type="text" @bind="_product.PartNumber"/>
-        <button @onclick="SaveNewChanges">Сохранить изменения</button>
-    </div>
-}
-@if (IsOpenRedactStock)
-{
-    <div class="redact-menu">
-        <h5>Количество на складе<button @onclick="RedactStock">X</button></h5>
-        <input type="text" @bind="_product.QuantityInStock"/>
-        <h5>Минимальное количество</h5>
-        <input type="text" @bind="_product.MinimumStockLevel"/>
-        <button @onclick="SaveNewChanges">Сохранить изменения</button>
-    </div>
-}
-@if (IsOpenRedactPrise)
-{
-    <div class="redact-menu">
-        <h5>Цена продажи<button @onclick="RedactPrice">X</button></h5>
-        <input type="text" @bind="_product.SalePrice"/>
-        <h5>Цена закупки</h5>
-        <input type="text" @bind="_product.PurchasePrice"/>
-        <button @onclick="SaveNewChanges">Сохранить изменения</button>
-    </div>
-}
-@if (IsOpenRedactDescription)
-{
-<div class="redact-menu">
-    <h5>Описание:<button @onclick="RedactDescription">X</button></h5>
-    <textarea @bind="_product.ProductDescription"></textarea>
-    <button @onclick="SaveNewChanges">Сохранить изменения</button>
-</div>
-}
-@if (IsOpenRedactSupplier)
-{
-    <div class="redact-menu">
-        <button @onclick="RedactSupplier">X</button>
-        <select class="redact-menu-select" @bind="SupplierId">
-            @foreach (var _supp in _suppliers)
-            {
-                <option value="@_supp.Id">@_supp.Name</option>
-            }
-        </select>
-        <button @onclick="SaveNewChanges">Сохранить изменения</button>
-    </div>
-}
+
 
 
 
@@ -117,8 +134,11 @@
     - Категоризация и поиск товаров по различным параметрам*/
     [Parameter] public int id { get; set; }
     private Product _product = new Product();
-    private Supplier _supplier = new Supplier();
-    private List<Supplier> _suppliers = new List<Supplier>();
+    private Supplier? _supplier = new Supplier();
+    private List<Supplier?> _suppliers = new List<Supplier?>();
+    private List<Purchase> _purchases = new List<Purchase>();
+    private int _numberProductOrders;
+    
     private string? message = null;
     private bool IsOpenRedactName;
     private bool IsOpenRedactStock;
@@ -126,10 +146,16 @@
     private bool IsOpenRedactSupplier;
     private int SupplierId;
     private bool IsOpenRedactDescription;
+    private string Role;
 
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
         LoadProduct();
+        Role = await LocalStorage.GetItemAsync<string>("Role");
+        if (Role != "Employer")
+        {
+            NavigationManager.NavigateTo("/");
+        }
     }
     private async void Timer()
     { await Task.Delay(10000); message = null; StateHasChanged(); }
@@ -139,7 +165,9 @@
         try
         { 
             _product = ef.Products.FirstOrDefault(p => p.Id == id)!;
-           /* _supplier = ef.Suppliers.FirstOrDefault(s => s.Id == _product.SupplierId);*/ 
+            _suppliers = ef.Suppliers.ToList();
+            _supplier = ef.Suppliers.FirstOrDefault(s => s.Id == _product.SupplierId);
+            _purchases = ef.Purchases.ToList();
         }
         catch (Exception e)
         { message = e.Message; }   
@@ -163,15 +191,15 @@
     private void RedactSupplier()
     {
         IsOpenRedactSupplier = !IsOpenRedactSupplier;
-        _suppliers = ef.Suppliers.ToList();
     }
 
     private void SaveNewChanges()
     {
         try
         {
-            //_supplier = ef.Suppliers.FirstOrDefault(s => s.Id == SupplierId);
+            _supplier = ef.Suppliers.FirstOrDefault(s => s.Id == SupplierId);
             _product.SupplierId = _supplier.Id;
+            _product.SupplierId = ef.Suppliers.FirstOrDefault(s=> s.Id == _supplier.Id).Id;
             ef.Update(_product);
             ef.SaveChanges();
             StateHasChanged();
@@ -182,4 +210,52 @@
             message = e.Message;
         }
     }
+
+    private int _purchasesByHourCount;
+    private int _purchasesByDay;
+    private int _purchasesByMonth;
+    private double averageDailyConsumption;
+    private List<PurchaseHistory> _purchaseHistory = new List<PurchaseHistory>();
+    private void GetProductStatistics()
+    {
+        _numberProductOrders = _purchases.GroupBy(p => p.ProductId).Count();
+
+        _purchasesByHourCount = _purchases //заказы товара по времени
+            .Where(p => p.ProductId == id)
+            .GroupBy(p => p.PurchaseDate.Hour)
+            .Select(g => new { Hour = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count).Count();
+        _purchasesByDay = _purchases
+            .Where(p => p.ProductId == id)
+            .GroupBy(p => p.PurchaseDate.DayOfWeek)
+            .Select(g => new { Day = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count).Count();
+        _purchasesByMonth = _purchases
+            .Where(p => p.ProductId == id)
+            .GroupBy(p => p.PurchaseDate.Month)
+            .Select(g => new { Month = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count).Count();
+        
+        var purchaseHistory = _purchases.Where(p => p.ProductId == id)//частота пополнений
+            .GroupBy(p => p.PurchaseDate.Date)
+            .Select(g => new { Date = g.Key, TotalPurchased = g.Sum(p => p.Quantity) })
+            .Join(_purchases, g => g.TotalPurchased, p => p.Id, (g, p) => new PurchaseHistory
+                {
+                    Date = g.Date,
+                    TotalPurchased = g.TotalPurchased //всего было приобретено
+                }
+            );
+        _purchaseHistory = purchaseHistory.ToList();
+        
+        int _totalPurchases = _purchases.Where(p => p.ProductId == id).Sum(p => p.Quantity);// Определение среднего расхода товара
+        int _daysInRecord = (DateTime.Today - _purchases.Min(p => p.PurchaseDate)).Days;
+        averageDailyConsumption = (double)_totalPurchases / _daysInRecord;
+    }
+
+    class PurchaseHistory
+    {
+        public DateTime Date { get; set; }
+        public int TotalPurchased { get; set; }
+    }
+    
 }

@@ -1,0 +1,79 @@
+@page "/Registred"
+@using Model
+@using Practical.DataBase
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@inject ModelContext ef
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<div class="registered-custom-background">
+    <div class="registered-container">
+        <h3 class="registered-text">РЕГИСТРАЦИЯ</h3>
+        <div class="registered-form">
+            <input class="registered-form-input" type="text" @bind="_client.Name" placeholder="Имя"/>
+            <input class="registered-form-input" type="text" @bind="_client.Email" placeholder="Email"/>
+            <input class="registered-form-input" type="password" @bind="_client.Password" placeholder="Пароль"/>
+            <input class="registered-form-input" type="date" @bind="_client.BirthDate" placeholder="Дата рождения"/>
+            <button class="registered-form-button" @onclick="Register">принять</button>
+            @if (IsAuth)
+            {
+            <button class="registered-form-button" @onclick="ReAuth">войти в новый аккаунт</button>
+            }
+        </div>
+        <NavLink class="nav-link" href="Auth">уже есть аккаунт?</NavLink>
+        @Msg
+    </div>
+</div>
+
+
+
+
+
+@code {
+    public Client _client = new Client();
+    private string Msg;
+    private bool IsAuth;
+
+    protected override async void OnInitialized()
+    {
+        IsAuth = await LocalStorage.GetItemAsync<bool>("IsAuth");
+        if (IsAuth)
+        {
+            Msg = "Вы уже вошли в аккаунт";
+        }
+        StateHasChanged();
+    }
+    private void ReAuth()
+    {
+        LocalStorage.SetItemAsync("IsAuth", false);
+        Msg = "Введите новые данные";
+        StateHasChanged();
+    }
+    
+    public async Task Register()
+    {
+        if (ef.Clients.FirstOrDefault(c => c.Email == _client.Email) != null)
+        {
+            Msg = "эта почта занята";
+        }
+        else
+        {
+            try
+            {
+                Msg = "Успешно";
+                ef.Add(_client); ef.SaveChanges();
+                LocalStorage.SetItemAsync("clientId", _client.Id);
+                LocalStorage.SetItemAsync("clientemail", _client.Email);
+                LocalStorage.SetItemAsync("clientpassword", _client.Password);
+                LocalStorage.SetItemAsync("IsAuth", true);
+                await Task.Delay(1000);
+                NavigationManager.NavigateTo("auth");
+            }
+            catch (Exception e)
+            {
+                Msg = e.Message;
+            }
+        }
+        
+    }
+}

@@ -58,11 +58,18 @@ Timer();
 @code {
     private Product _product = new Product();
     private int productId;
-    private List<Supplier> _suppliers = new List<Supplier>();
+    private List<Supplier?> _suppliers = new List<Supplier?>();
     private string? msg;
+    private string Role;
 
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
+        Role = await LocalStorage.GetItemAsync<string>("Role");
+        if (Role != "Employer")
+        {
+            NavigationManager.NavigateTo("/");
+        }
+  
        _suppliers = ef.Suppliers.ToList();
        _product.SupplierId = 1;
        _product.Image = "notfound";

@@ -35,6 +35,16 @@
     private string msg;
     private int _supplierId;
 
+    private string Role;
+    protected override async void OnInitialized()
+    {
+        Role = await LocalStorage.GetItemAsync<string>("Role");
+        if (Role != "Employer")
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+    
     private void SaveNewChanges()
     {
         ef.Add(_supplier);

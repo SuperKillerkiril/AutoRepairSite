@@ -1,0 +1,160 @@
+@page "/ProductCatalogManagement"
+@using Model
+@using Practical.DataBase
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@inject ModelContext ef
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<div class="background-N2">
+    <div class="background-N3">
+        @foreach (var product in _products)
+        {
+            <div class="product-container">
+                <img src="@product.Image"/>
+                <div class="product-description">
+                    <div class="product-description-header">
+                        <h1>@product.ProductName</h1><h4>Sale price: @product.SalePrice$</h4>
+                    </div>
+                    <h2>@product.Id</h2>
+                    <h4>@product.ProductDescription</h4>
+                    <button class="product-description-button" @onclick="() => ShowDetail(product.Id)"><img src="Icon/info.svg"/>Больше информации</button>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="catalog-filter">
+        <button @onclick="LoadProduct">Все товары</button>
+        <button @onclick="ToggleMenuPrice">Цена</button>
+        @if (IsMenuPriseOpen)
+        {
+            <div class="dropdown-store-menu">
+                <label>min @MinPrice</label>
+                <input type="range" min="0" max="10000000" step="100" @bind="MinPrice"/>
+                <label>max @MaxPrice</label>
+                <input type="range" min="0" max="10000" step="100" @bind="MaxPrice"/>
+            </div>
+        }
+        <button @onclick="ToggleMenuSupplier">Поставщик</button>
+        
+        @if (IsMenuSupplierOpen)
+        {
+            <select class="dropdown-store-menu" @bind="_selectedSuppliersId">
+                @foreach (var supplier in _suppliers)
+                {
+                    <option value="@supplier.Id">@supplier.Name</option>
+                }
+            </select>
+        }
+        @if (Role == "Employer")
+        {
+            <button @onclick="OpenMenuAdd">Страницы создания</button>
+            if (IsOpenMenuAdd)
+            {
+                <button @onclick="NavigateToAddProduct">Продукт</button>
+                <button @onclick="NavigateToAddPurchase">Заказ</button>
+                <button @onclick="NavigateToAddStore">Магазин</button>
+                <button @onclick="NavigateToAddSupplier">Поставщик</button>
+            }
+        <button @onclick="NavigateToStatistic">Статистика</button>
+        }
+        <div class="catalog-search">
+            <h5>по ID  </h5><input type="text"@bind="search"/>
+            <button @onclick="ReSearch"><img src="Icon/search.svg"/></button>
+        </div>
+    </div>
+    
+</div>
+
+
+
+@code {
+    private List<Product> _products = new List<Product>();
+    private List<Supplier> _suppliers = new List<Supplier>();
+    private int search = 0;
+    private int? _selectedSuppliersId = 0;
+    private int MinPrice = 0;
+    private int MaxPrice = 0;
+
+    private string Role;
+
+
+    protected override async void OnInitialized()
+    {
+        LoadProduct();
+        Role = await LocalStorage.GetItemAsync<string>("Role");
+        await Task.Delay(1000);
+        StateHasChanged();
+    }
+    private void LoadProduct()
+    {
+        _products = ef.Products.ToList();
+        _suppliers = ef.Suppliers.ToList();
+    }
+
+    private void NavigateToStatistic()
+    { NavigationManager.NavigateTo("/Statistics"); }
+    private void NavigateToAddProduct()
+    { NavigationManager.NavigateTo("/AddProduct"); }
+    private void NavigateToAddPurchase()
+    { NavigationManager.NavigateTo("/AddPurchase"); }
+    private void NavigateToAddStore()
+    { NavigationManager.NavigateTo("/AddStore"); }
+    private void NavigateToAddSupplier()
+    { NavigationManager.NavigateTo("/AddSuppliers"); }
+    
+    
+    
+    private bool IsOpenMenuAdd;
+    private void OpenMenuAdd()
+    {
+        IsOpenMenuAdd = !IsOpenMenuAdd;
+    }
+    
+    private void ShowDetail(int productId)
+    {
+        
+        if (Role == "Employer")
+        {
+            NavigationManager.NavigateTo($"/ProductDemo/{productId}");
+        }
+        else
+        {
+            NavigationManager.NavigateTo($"/ProductDemoClient/{productId}");
+        }
+    }
+
+    private bool IsMenuPriseOpen = false;
+
+    private void ToggleMenuPrice()
+    {
+        IsMenuPriseOpen = !IsMenuPriseOpen;
+    }
+
+    private bool IsMenuSupplierOpen = false;
+
+    private void ToggleMenuSupplier()
+    {
+        IsMenuSupplierOpen = !IsMenuSupplierOpen;
+    }
+
+    private void ReSearch()
+    {
+        LoadProduct();
+        if (_selectedSuppliersId != 0)
+        {
+            _products = _products.Where(p => p.SupplierId == _selectedSuppliersId).ToList();
+        }
+        if (MaxPrice > MinPrice)
+        {
+            _products = _products.Where(p => p.SalePrice > MinPrice & p.SalePrice < MaxPrice).ToList();
+        }
+
+        if (search !=0)
+        {
+            _products = _products.Where(p => p.Id == search).ToList();
+        }
+        StateHasChanged();
+    }
+
+}

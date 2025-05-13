@@ -22,6 +22,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Practical.DataBase\Practical.DataBase.csproj" />
+      <ProjectReference Include="..\Practical.Services\Practical.Services.csproj" />
     </ItemGroup>
 
 </Project>

@@ -10,6 +10,7 @@ public class ModelContext : DbContext
     public DbSet<Store> Stores { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<Employee> Employees { get; set; }
+    public DbSet<Client> Clients { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
