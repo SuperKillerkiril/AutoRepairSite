@@ -16,13 +16,13 @@
                 <h1>Name: @_product.ProductName</h1>
             </div>
             <div class="display-flex-N1"><h3>id: @_product.Id</h3></div>
-            <div class="display-flex-N1"><h3>Part: @_product.PartNumber</h3><button><img src="Icon/square-plus.svg"/>заказать</button></div><!--добавить метод-->
+            <div class="display-flex-N1"><h3>Part: @_product.PartNumber</h3><button @onclick="() => NavigateToPurchase(_product.Id)"><img src="Icon/square-plus.svg"/>заказать</button></div><!--добавить метод-->
         </div>
     </div>
 
 <div class="product-demo-middle">
     <div class="product-demo-middle-stock">
-        <h5>Прямо сейчас на складе: </h5>
+        <h3>Прямо сейчас на складе: </h3>
         <h5>@_product.QuantityInStock</h5>
     </div>
     <div class="product-demo-middle-stock">
@@ -46,6 +46,10 @@
         {
             NavigationManager.NavigateTo("/");
         }
+    }
+    private void NavigateToPurchase(int prodId)
+    {
+        NavigationManager.NavigateTo($"/AddPurchase/{prodId}");
     }
     private void LoadProduct()
     {

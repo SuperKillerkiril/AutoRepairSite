@@ -13,7 +13,6 @@
             <input class="registered-form-input" type="text" @bind="_client.Name" placeholder="Имя"/>
             <input class="registered-form-input" type="text" @bind="_client.Email" placeholder="Email"/>
             <input class="registered-form-input" type="password" @bind="_client.Password" placeholder="Пароль"/>
-            <input class="registered-form-input" type="date" @bind="_client.BirthDate" placeholder="Дата рождения"/>
             <button class="registered-form-button" @onclick="Register">принять</button>
             @if (IsAuth)
             {
@@ -46,6 +45,7 @@
     private void ReAuth()
     {
         LocalStorage.SetItemAsync("IsAuth", false);
+        LocalStorage.SetItemAsync("Role", "null");
         Msg = "Введите новые данные";
         StateHasChanged();
     }

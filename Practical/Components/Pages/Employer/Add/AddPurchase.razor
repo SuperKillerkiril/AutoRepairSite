@@ -1,4 +1,4 @@
-@page "/AddPurchase"
+@page "/AddPurchase/{id:int}"
 @using Model
 @using Practical.DataBase
 @rendermode InteractiveServer
@@ -42,6 +42,7 @@
 
 
 @code {
+    [Parameter] public int id { get; set; }
     private Purchase _purchase = new Purchase();
     private Product _product = new Product();
     private List<Product> _products = new List<Product>();
@@ -50,19 +51,15 @@
     private int _purchaseId;
 
     private string Role;
-    protected override async void OnInitialized()
+    protected override void OnInitialized()
     {
         LoadModel();
-        Role = await LocalStorage.GetItemAsync<string>("Role");
-        if (Role != "Employer")
-        {
-            NavigationManager.NavigateTo("/");
-        }
     }
     private void LoadModel()
     {
         _stores = ef.Stores.ToList();
         _products = ef.Products.ToList();
+        _product.Id = id;
     }
 
     private void ChangeProduct()

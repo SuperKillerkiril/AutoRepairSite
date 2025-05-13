@@ -73,7 +73,7 @@
                 <button @onclick="RedactName"><img src="Icon/pencil.svg"/>ред.</button>
             </div>
             <div class="display-flex-N1"><h3>id: @_product.Id</h3><button @onclick="RemoveProduct"><img src="Icon/trashBin.svg"/>удалить</button></div>
-            <div class="display-flex-N1"><h3>Part: @_product.PartNumber</h3><button><img src="Icon/square-plus.svg"/>заказать</button></div><!--добавить метод-->
+            <div class="display-flex-N1"><h3>Part: @_product.PartNumber</h3><button @onclick="() => NavigateToPurchase(_product.Id)"><img src="Icon/square-plus.svg"/>заказать</button></div><!--добавить метод-->
         </div>
     </div>
     
@@ -159,7 +159,7 @@
     }
     private async void Timer()
     { await Task.Delay(10000); message = null; StateHasChanged(); }
-
+    
     private void LoadProduct()
     {
         try
@@ -173,6 +173,11 @@
         { message = e.Message; }   
     }
 
+    private void NavigateToPurchase(int prodId)
+    {
+        NavigationManager.NavigateTo($"/AddPurchase/{prodId}");
+    }
+    
     private void RemoveProduct()
     { 
         ef.Remove(_product);
