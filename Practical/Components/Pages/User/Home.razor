@@ -30,19 +30,6 @@
     
     protected override void OnInitialized()
     {
-        try
-        {
-            Employee employee = new Employee();
-            employee.Name = "admin";
-            employee.Email = "111";
-            employee.Password = "111";
-            ef.Add(employee);
-            ef.SaveChanges();
-        }
-        catch
-        {
-            msg = "если что то админ присутствует";
-        }
     }
     private async void Timer()
     { await Task.Delay(10000); msg = null; StateHasChanged(); }

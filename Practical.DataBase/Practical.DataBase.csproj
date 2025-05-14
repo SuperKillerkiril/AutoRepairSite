@@ -23,4 +23,8 @@
       <ProjectReference Include="..\Practical.Model\Practical.Model.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Migrations\" />
+    </ItemGroup>
+
 </Project>

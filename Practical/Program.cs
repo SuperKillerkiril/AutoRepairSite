@@ -1,5 +1,6 @@
 using Blazored.LocalStorage;
 using Microsoft.EntityFrameworkCore;
+using Model;
 using Practical.Components;
 using Practical.Components.Pages.Employer.Statistics;
 using Practical.DataBase;

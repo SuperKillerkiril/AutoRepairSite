@@ -71,6 +71,10 @@
     private void SaveNewChanges()
     {
         var clientid = Convert.ToInt16(LocalStorage.GetItemAsync<string>("clientId"));
+        if (clientid == 0)
+        {
+            _purchase.ClientId = 1;
+        }
         if (clientid != 0)
         {
             _purchase.ClientId = clientid;
