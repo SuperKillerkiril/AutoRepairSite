@@ -73,7 +73,7 @@
                 <button @onclick="RedactName"><img src="Icon/pencil.svg"/>ред.</button>
             </div>
             <div class="display-flex-N1"><h3>id: @_product.Id</h3><button @onclick="RemoveProduct"><img src="Icon/trashBin.svg"/>удалить</button></div>
-            <div class="display-flex-N1"><h3>Part: @_product.PartNumber</h3><button @onclick="() => NavigateToPurchase(_product.Id)"><img src="Icon/square-plus.svg"/>заказать</button></div><!--добавить метод-->
+            <div class="display-flex-N1"><h3>Part: @_product.PartNumber</h3><button @onclick="() => NavigateToPurchase(_product.Id)"><img src="Icon/square-plus.svg"/>заказать</button></div>
         </div>
     </div>
     
@@ -130,8 +130,6 @@
 
 
 @code {
-    /*- Добавление, редактирование и удаление автозапчастей
-    - Категоризация и поиск товаров по различным параметрам*/
     [Parameter] public int id { get; set; }
     private Product _product = new Product();
     private Supplier? _supplier = new Supplier();
@@ -140,63 +138,6 @@
     private int _numberProductOrders;
     
     private string? message = null;
-    private bool IsOpenRedactName;
-    private bool IsOpenRedactStock;
-    private bool IsOpenRedactPrise;
-    private bool IsOpenRedactSupplier;
-    private int SupplierId;
-    private bool IsOpenRedactDescription;
-    private string Role;
-
-    protected override async void OnInitialized()
-    {
-        LoadProduct();
-        Role = await LocalStorage.GetItemAsync<string>("Role");
-        if (Role != "Employer")
-        {
-            NavigationManager.NavigateTo("/");
-        }
-    }
-    private async void Timer()
-    { await Task.Delay(10000); message = null; StateHasChanged(); }
-    
-    private void LoadProduct()
-    {
-        try
-        { 
-            _product = ef.Products.FirstOrDefault(p => p.Id == id)!;
-            _suppliers = ef.Suppliers.ToList();
-            _supplier = ef.Suppliers.FirstOrDefault(s => s.Id == _product.SupplierId);
-            _purchases = ef.Purchases.ToList();
-        }
-        catch (Exception e)
-        { message = e.Message; }   
-    }
-
-    private void NavigateToPurchase(int prodId)
-    {
-        NavigationManager.NavigateTo($"/AddPurchase/{prodId}");
-    }
-    
-    private void RemoveProduct()
-    { 
-        ef.Remove(_product);
-        ef.SaveChanges(); 
-    }
-
-    private void RedactName()
-    { IsOpenRedactName = !IsOpenRedactName; }
-    private void RedactStock()
-    { IsOpenRedactStock = !IsOpenRedactStock; }
-    private void RedactPrice()
-    { IsOpenRedactPrise = !IsOpenRedactPrise; }
-    private void RedactDescription()
-    { IsOpenRedactDescription = !IsOpenRedactDescription; }
-
-    private void RedactSupplier()
-    {
-        IsOpenRedactSupplier = !IsOpenRedactSupplier;
-    }
 
     private void SaveNewChanges()
     {
@@ -214,6 +155,60 @@
         {
             message = e.Message;
         }
+    }
+    protected override async void OnInitialized()
+    {
+        LoadProduct();
+        Role = await LocalStorage.GetItemAsync<string>("Role");
+        if (Role != "Employer")
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+    private void LoadProduct()
+    {
+        try
+        { 
+            _product = ef.Products.FirstOrDefault(p => p.Id == id)!;
+            _suppliers = ef.Suppliers.ToList();
+            _supplier = ef.Suppliers.FirstOrDefault(s => s.Id == _product.SupplierId);
+            _purchases = ef.Purchases.ToList();
+        }
+        catch (Exception e)
+        { message = e.Message; }   
+    }
+    private void NavigateToPurchase(int prodId)
+    {
+        NavigationManager.NavigateTo($"/AddPurchase/{prodId}");
+    }
+    private void RemoveProduct()
+    { 
+        ef.Remove(_product);
+        ef.SaveChanges(); 
+    }
+
+    private async void Timer()
+    { await Task.Delay(10000); message = null; StateHasChanged(); }
+    
+    private bool IsOpenRedactName;
+    private bool IsOpenRedactStock;
+    private bool IsOpenRedactPrise;
+    private bool IsOpenRedactSupplier;
+    private int SupplierId;
+    private bool IsOpenRedactDescription;
+    private string Role;
+    private void RedactName()
+    { IsOpenRedactName = !IsOpenRedactName; }
+    private void RedactStock()
+    { IsOpenRedactStock = !IsOpenRedactStock; }
+    private void RedactPrice()
+    { IsOpenRedactPrise = !IsOpenRedactPrise; }
+    private void RedactDescription()
+    { IsOpenRedactDescription = !IsOpenRedactDescription; }
+
+    private void RedactSupplier()
+    {
+        IsOpenRedactSupplier = !IsOpenRedactSupplier;
     }
 
     private int _purchasesByHourCount;

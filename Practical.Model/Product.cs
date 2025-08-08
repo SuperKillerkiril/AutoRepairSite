@@ -2,7 +2,7 @@
 
 namespace Model;
 
-public class Product //Продукт, автозапяасть
+public class Product 
 {
     [Key] public int Id { get; set; }
     public string Image { get; set; }

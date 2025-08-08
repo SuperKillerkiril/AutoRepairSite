@@ -49,7 +49,7 @@
     private List<Store> _stores = new List<Store>();
     private string? msg;
     private int _purchaseId;
-
+    
     private string Role;
     protected override void OnInitialized()
     {
@@ -63,31 +63,31 @@
     }
 
     private void ChangeProduct()
-    {
-        _product = ef.Products.FirstOrDefault(p => p.Id == _product.Id);
-        StateHasChanged();
-    }
+    { _product = ef.Products.FirstOrDefault(p => p.Id == _product.Id); }
 
     private void SaveNewChanges()
     {
-        var clientid = Convert.ToInt16(LocalStorage.GetItemAsync<string>("clientId"));
+        var clientid = 0;
+        try
+        {
+            clientid = Convert.ToInt16(LocalStorage.GetItemAsync<string>("clientId"));
+        }
+        catch (Exception e)
+        {
+           
         if (clientid == 0)
-        {
-            _purchase.ClientId = 1;
-        }
+        { _purchase.ClientId = 1; }
+        
         if (clientid != 0)
-        {
-            _purchase.ClientId = clientid;
-        }
+        { _purchase.ClientId = clientid; }
+        
         _purchase.TotalPrice = _product.SalePrice + 100; //цена доставки
-        _purchase.ProductId = _product.Id; 
-        _purchase.PurchaseDate = DateTime.Now;
-        ef.Add(_purchase);
-        ef.SaveChanges();
+        _purchase.ProductId = _product.Id; _purchase.PurchaseDate = DateTime.Now; _purchaseId = _purchase.Id;
+        ef.Add(_purchase); ef.SaveChanges();
         msg = "Заказ создан";
         Timer();
-        _purchaseId = _purchase.Id;
         NavigationManager.NavigateTo($"/PurchaseDemo/{_purchaseId}");//добавить страницу
+        }
     }
     private void Timer()
     {  Task.Delay(10000); msg = null; StateHasChanged(); }

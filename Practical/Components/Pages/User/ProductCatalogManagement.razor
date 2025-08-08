@@ -63,7 +63,6 @@
             <button @onclick="ReSearch"><img src="Icon/search.svg"/></button>
         </div>
     </div>
-    
 </div>
 
 
@@ -75,23 +74,8 @@
     private int? _selectedSuppliersId = 0;
     private int MinPrice = 0;
     private int MaxPrice = 0;
-
     private string Role;
-
-
-    protected override async void OnInitialized()
-    {
-        LoadProduct();
-        Role = await LocalStorage.GetItemAsync<string>("Role");
-        await Task.Delay(1000);
-        StateHasChanged();
-    }
-    private void LoadProduct()
-    {
-        _products = ef.Products.ToList();
-        _suppliers = ef.Suppliers.ToList();
-    }
-
+    
     private void NavigateToStatistic()
     { NavigationManager.NavigateTo("/Statistics"); }
     private void NavigateToAddProduct()
@@ -103,17 +87,32 @@
     private void NavigateToAddSupplier()
     { NavigationManager.NavigateTo("/AddSuppliers"); }
     
-    
-    
     private bool IsOpenMenuAdd;
     private void OpenMenuAdd()
+    { IsOpenMenuAdd = !IsOpenMenuAdd; }
+    private bool IsMenuPriseOpen = false;
+    private void ToggleMenuPrice()
+    { IsMenuPriseOpen = !IsMenuPriseOpen; }
+    private bool IsMenuSupplierOpen = false;
+    private void ToggleMenuSupplier()
+    { IsMenuSupplierOpen = !IsMenuSupplierOpen; }
+
+
+    protected override async void OnInitialized()
     {
-        IsOpenMenuAdd = !IsOpenMenuAdd;
+    LoadProduct();
+    Role = await LocalStorage.GetItemAsync<string>("Role");
+    await Task.Delay(1000);
+    StateHasChanged();
     }
-    
+    private void LoadProduct()
+    {
+    _products = ef.Products.ToList();
+    _suppliers = ef.Suppliers.ToList();
+    }
+
     private void ShowDetail(int productId)
     {
-        
         if (Role == "Employer")
         {
             NavigationManager.NavigateTo($"/ProductDemo/{productId}");
@@ -123,21 +122,6 @@
             NavigationManager.NavigateTo($"/ProductDemoClient/{productId}");
         }
     }
-
-    private bool IsMenuPriseOpen = false;
-
-    private void ToggleMenuPrice()
-    {
-        IsMenuPriseOpen = !IsMenuPriseOpen;
-    }
-
-    private bool IsMenuSupplierOpen = false;
-
-    private void ToggleMenuSupplier()
-    {
-        IsMenuSupplierOpen = !IsMenuSupplierOpen;
-    }
-
     private void ReSearch()
     {
         LoadProduct();
@@ -156,5 +140,4 @@
         }
         StateHasChanged();
     }
-
 }
