@@ -1,5 +1,6 @@
 ﻿@page "/Test"
 @using Model
+@using Model.InternalModels
 @using Practical.DataBase
 @rendermode InteractiveServer
 @inject ModelContext ef
@@ -45,12 +46,12 @@
         _purchases = ef.Purchases.ToList();
     }
     
-    public IEnumerable<Statistics.Statistics.ProductSales> GetTopSellingProduct()
+    public IEnumerable<ProductSales> GetTopSellingProduct()
     {
         var salesData = _purchases.Where(p => p.PurchaseDate >= _timeStart && p.PurchaseDate <= _timeEnd)
             .GroupBy(p => p.ProductId)
             .Select(g => new { ProductId = g.Key, QuantitySold = g.Sum(p => p.Quantity) })
-            .Join(_products, g => g.ProductId, p => p.Id, (g, p) => new Statistics.Statistics.ProductSales
+            .Join(_products, g => g.ProductId, p => p.Id, (g, p) => new ProductSales
                 {
                     ProductId = p.Id,
                     ProductName = p.ProductName,

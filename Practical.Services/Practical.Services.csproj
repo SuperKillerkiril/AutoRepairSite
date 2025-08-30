@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Practical.DataBase\Practical.DataBase.csproj" />
       <ProjectReference Include="..\Practical.Model\Practical.Model.csproj" />
     </ItemGroup>
 

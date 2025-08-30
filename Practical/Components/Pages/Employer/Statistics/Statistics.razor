@@ -1,10 +1,13 @@
 @page "/Statistics"
 @using Model
+@using Model.InternalModels
 @using Practical.DataBase
+@using Practical.Services
 @rendermode InteractiveServer
 @inject ModelContext ef
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
+@inject StatisticsService DbStatisticsService
 
 
 <div class="statistics-data-input">
@@ -100,7 +103,6 @@
 @code {
     private List<Purchase> _purchases = new List<Purchase>();
     private List<Product> _products = new List<Product>();
-    private List<Supplier> _suppliers = new List<Supplier>();
     
     
     private List<Product> _productsBelowMinimum = new List<Product>();
@@ -129,7 +131,6 @@
     {
         _products = ef.Products.ToList();
         _purchases = ef.Purchases.ToList();
-        _suppliers = ef.Suppliers.ToList();
     }
     
     private void ShowDetail(int productId)
@@ -149,7 +150,7 @@
 
     public int GetTotalQuantityInStock()//общее кол-во на складе 
     {
-        return _products.Sum(p => p.QuantityInStock);
+        return DbStatisticsService.GetTotalQuantityInStock();
     }
 
     public decimal GetAveragePurchasePrice()//сред цена закупки товаров
@@ -184,47 +185,10 @@
 
     public void GetTopSellingProduct() //10 самых продаваемых товаров относительно заказов
     {
-        var salesData = _purchases.Where(p => p.PurchaseDate >= _timeStart && p.PurchaseDate <= _timeEnd)
-            .GroupBy(p => p.ProductId)
-            .Select(g => new { ProductId = g.Key, QuantitySold = g.Sum(p => p.Quantity) })
-            .Join(_products, g => g.ProductId, p => p.Id, (g, p) => new ProductSales
-                {
-                    ProductId = p.Id,
-                    ProductName = p.ProductName,
-                    TotalQuantitySold = g.QuantitySold
-                }
-            );
-        _productsTopSelling = salesData.OrderByDescending(s => s.TotalQuantitySold).Take(10).ToList();
-        StateHasChanged();
+        _productsTopSelling = DbStatisticsService.GetTopSellingProduct(_timeStart, _timeEnd);
     }
-    public class ProductSales
-    {
-        public int ProductId { get; set; } 
-        public string? ProductName { get; set; }
-        public int TotalQuantitySold { get; set; }
-    }
-
     public void GetSupplierStatistics()//стата по поставщикам тоже в виде отдельного класса, но операторами
     {
-        var query = from p in _purchases
-            join prod in _products on p.ProductId equals prod.Id
-            join sup in _suppliers on prod.SupplierId equals sup.Id
-            where p.PurchaseDate >= _timeStart && p.PurchaseDate <= _timeEnd
-            group p by new {sup.Id, sup.Name}into g
-            select new SupplierStatistic 
-            {
-                SupplierId = g.Key.Id,
-                SupplierName = g.Key.Name,
-                TotalQuantityPurchased = g.Sum(p=> p.Quantity), //общее количество приобретенных товаров
-                TotalSpent = g.Sum(p=> p.TotalPrice) //общее количество потраченных 
-            };
-        _supplierStatistics = query.OrderByDescending(s => s.TotalQuantityPurchased).Take(10).ToList();
-    }
-    public class SupplierStatistic
-    {
-       public int SupplierId { get; set; } 
-       public string? SupplierName { get; set; }
-       public int TotalQuantityPurchased { get; set; }
-       public decimal TotalSpent { get; set; }
+        _supplierStatistics = DbStatisticsService.GetSupplierStatistics(_timeStart, _timeEnd);
     }
 }
